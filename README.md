@@ -10,26 +10,16 @@
 
 ## 快速开始
 
-这个压缩包只包含 `lib/` 源码与 `pubspec.yaml` 等配置，**不含**各平台脚手架目录（android/ios/windows…）。最省事的方式是用 Flutter 重新生成脚手架，再把本工程的文件覆盖进去：
+本项目已生成并完整配置了跨平台原生工程脚手架（Android, iOS, Windows, macOS, Linux, Web）。特别地，针对 Android 端已预先配置了 Java 8 核心库脱糖（core library desugaring）以兼容高级别的通知推送 API。您可以直接拉取依赖并运行：
 
 ```bash
-# 1. 在空目录用 Flutter 生成完整工程脚手架
-flutter create bumpjourney
-cd bumpjourney
-
-# 2. 用本压缩包的内容覆盖 lib/ 和 pubspec.yaml
-#    （把解压出的 lib/、pubspec.yaml、analysis_options.yaml 复制进来覆盖）
-
-# 3. 拉取依赖
+# 1. 拉取依赖
 flutter pub get
 
-# 4. 运行
+# 2. 运行调试
 flutter run                 # 选择已连接的设备/模拟器
 flutter run -d windows      # 或直接跑桌面端预览
-flutter run -d chrome       # Web 端预览（注意 sqflite 在纯 Web 需额外适配）
 ```
-
-> 提示：直接在已有的 `flutter create` 工程里替换 `lib/` 与 `pubspec.yaml`，能避免缺少平台目录导致无法构建。
 
 ## 目录结构
 
