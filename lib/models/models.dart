@@ -9,6 +9,16 @@ class StandardWeekData {
   final List<CheckItem> checks;
   final List<DadTask> dadTasks;
 
+  // —— 更丰富的每周指导(孕妈) ——
+  final List<String> tips; // 本周注意事项 / 提醒
+  final String nutrition; // 营养补充重点
+  final String exercise; // 运动量 / 运动建议
+  final String sleep; // 睡眠姿势 / 禁忌
+  final String water; // 喝水量 / 饮水建议
+
+  // —— 准爸爸 ——
+  final String dadTip; // 本周体贴提示(随周变化)
+
   const StandardWeekData({
     required this.week,
     required this.fruitEmoji,
@@ -18,6 +28,12 @@ class StandardWeekData {
     required this.dietBad,
     required this.checks,
     required this.dadTasks,
+    this.tips = const [],
+    this.nutrition = '',
+    this.exercise = '',
+    this.sleep = '',
+    this.water = '',
+    this.dadTip = '',
   });
 }
 

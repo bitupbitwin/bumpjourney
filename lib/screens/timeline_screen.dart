@@ -144,6 +144,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
           ],
         ),
       ),
+      if (_hasLifestyle(d)) _lifestyleCard(d, accent, accentSoft),
+      if (d.tips.isNotEmpty) _tipsCard(d.tips, accent, accentSoft),
       SectionCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,6 +192,96 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
+  bool _hasLifestyle(StandardWeekData d) =>
+      d.nutrition.isNotEmpty ||
+      d.exercise.isNotEmpty ||
+      d.sleep.isNotEmpty ||
+      d.water.isNotEmpty;
+
+  // —— 起居调养:营养 / 运动 / 睡眠 / 喝水 ——
+  Widget _lifestyleCard(StandardWeekData d, Color accent, Color accentSoft) {
+    final rows = <(String, String, String)>[
+      if (d.nutrition.isNotEmpty) ('💊', '营养补充', d.nutrition),
+      if (d.exercise.isNotEmpty) ('🤸', '运动建议', d.exercise),
+      if (d.sleep.isNotEmpty) ('🌙', '睡眠姿势', d.sleep),
+      if (d.water.isNotEmpty) ('💧', '喝水建议', d.water),
+    ];
+    return SectionCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CategoryTag('🌿 起居调养', color: accent, bg: accentSoft),
+          const SizedBox(height: 6),
+          ...rows.asMap().entries.map((e) {
+            final last = e.key == rows.length - 1;
+            return Padding(
+              padding: EdgeInsets.only(top: 10, bottom: last ? 0 : 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(e.value.$1, style: const TextStyle(fontSize: 16)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(e.value.$2,
+                            style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700,
+                                color: accent)),
+                        const SizedBox(height: 2),
+                        Text(e.value.$3,
+                            style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF5C564E),
+                                height: 1.6)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  // —— 本周注意事项 ——
+  Widget _tipsCard(List<String> tips, Color accent, Color accentSoft) {
+    return SectionCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CategoryTag('⚠️ 本周注意事项', color: accent, bg: accentSoft),
+          const SizedBox(height: 10),
+          ...tips.map((t) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('·',
+                        style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w900,
+                            color: accent)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(t,
+                          style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF5C564E),
+                              height: 1.6)),
+                    ),
+                  ],
+                ),
+              )),
+        ],
+      ),
+    );
+  }
+
   // —— 准爸爸视角 ——
   List<Widget> _dadCards(AppState app, StandardWeekData d, Color accent, Color accentSoft) {
     return [
@@ -226,10 +318,50 @@ class _TimelineScreenState extends State<TimelineScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            CategoryTag('👀 老婆这周的状态', color: accent, bg: accentSoft),
+            const SizedBox(height: 10),
+            Text('身体变化:${d.bodyChange}',
+                style: const TextStyle(
+                    fontSize: 13.5, color: Color(0xFF5C564E), height: 1.7)),
+            if (d.tips.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              ...d.tips.take(2).map((t) => Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('·',
+                            style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w900,
+                                color: accent)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(t,
+                              style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF5C564E),
+                                  height: 1.6)),
+                        ),
+                      ],
+                    ),
+                  )),
+            ],
+          ],
+        ),
+      ),
+      SectionCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             CategoryTag('💗 体贴提示', color: accent, bg: accentSoft),
             const SizedBox(height: 10),
-            const Text('这一周,记得多问一句「累不累」。陪伴不是任务,但先从勾掉这些任务开始。',
-                style: TextStyle(fontSize: 14, color: Color(0xFF5C564E), height: 1.7)),
+            Text(
+                d.dadTip.isNotEmpty
+                    ? d.dadTip
+                    : '这一周,记得多问一句「累不累」。陪伴不是任务,但先从勾掉这些任务开始。',
+                style: const TextStyle(
+                    fontSize: 14, color: Color(0xFF5C564E), height: 1.7)),
           ],
         ),
       ),

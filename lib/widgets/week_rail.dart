@@ -21,7 +21,7 @@ class _WeekRailState extends State<WeekRail> {
 
   void _centerOnSelected({bool animate = true}) {
     final app = context.read<AppState>();
-    final idx = app.selectedWeek - 4;
+    final idx = app.selectedWeek - 1;
     final target = (idx * _itemW) - 150;
     final clamped = target.clamp(0.0, _ctrl.position.maxScrollExtent);
     if (animate) {
@@ -52,10 +52,10 @@ class _WeekRailState extends State<WeekRail> {
             controller: _ctrl,
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: 37, // W4..W40
+            itemCount: 40, // W1..W40
             separatorBuilder: (_, __) => const SizedBox(width: 8),
             itemBuilder: (_, i) {
-              final w = i + 4;
+              final w = i + 1;
               final isCur = w == app.currentWeek;
               final isSel = w == app.selectedWeek;
               final isPast = w < app.currentWeek;
