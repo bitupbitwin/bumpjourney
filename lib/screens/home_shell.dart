@@ -6,6 +6,7 @@ import '../widgets/role_switch.dart';
 import '../widgets/week_rail.dart';
 import 'timeline_screen.dart';
 import 'knowledge_screen.dart';
+import 'tools_screen.dart';
 import 'reminders_screen.dart';
 import 'profile_screen.dart';
 import 'add_node_sheet.dart';
@@ -44,6 +45,7 @@ class _HomeShellState extends State<HomeShell> {
                 children: const [
                   TimelineScreen(),
                   KnowledgeScreen(),
+                  ToolsScreen(),
                   RemindersScreen(),
                   ProfileScreen(),
                 ],
@@ -114,6 +116,7 @@ class _HomeShellState extends State<HomeShell> {
     final items = [
       (Icons.calendar_today_outlined, '时间线'),
       (Icons.menu_book_outlined, '知识库'),
+      (Icons.monitor_heart_outlined, '工具'),
       (Icons.notifications_none, '提醒'),
       (Icons.person_outline, '我的'),
     ];

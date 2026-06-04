@@ -23,13 +23,71 @@ class AppState extends ChangeNotifier {
 
   List<CustomEvent> _events = [];
   List<KnowledgeItem> _knowledge = [];
+  Set<String> _checkStates = {};
+  List<FetalMovementSession> _fetalSessions = [];
+  List<ContractionRecord> _contractions = [];
 
   List<CustomEvent> get allEvents => _events;
   List<KnowledgeItem> get allKnowledge => _knowledge;
+  List<FetalMovementSession> get fetalSessions => _fetalSessions;
+  List<ContractionRecord> get contractions => _contractions;
 
   Future<void> load() async {
     _events = await _db.getEvents();
     _knowledge = await _db.getKnowledge();
+    _checkStates = await _db.getCheckStates();
+    _fetalSessions = await _db.getFetalSessions();
+    _contractions = await _db.getContractions();
+    notifyListeners();
+  }
+
+  // —— 勾选态(产检 / 老公任务),已持久化到 SQLite ——
+  bool isChecked(String key) => _checkStates.contains(key);
+
+  void setCheck(String key, bool present) {
+    if (present) {
+      _checkStates.add(key);
+    } else {
+      _checkStates.remove(key);
+    }
+    notifyListeners();
+    _db.setCheckState(key, present); // 本地写入,无需阻塞 UI
+  }
+
+  // —— 胎动计数 ——
+  Future<void> addFetalSession(FetalMovementSession s) async {
+    final id = await _db.insertFetalSession(s);
+    _fetalSessions.insert(
+        0,
+        FetalMovementSession(
+            id: id, startTime: s.startTime, endTime: s.endTime, count: s.count));
+    notifyListeners();
+  }
+
+  Future<void> deleteFetalSession(int id) async {
+    await _db.deleteFetalSession(id);
+    _fetalSessions.removeWhere((s) => s.id == id);
+    notifyListeners();
+  }
+
+  // —— 宫缩计时(按开始时间升序存,便于推算间隔) ——
+  Future<void> addContraction(ContractionRecord c) async {
+    final id = await _db.insertContraction(c);
+    _contractions.add(ContractionRecord(
+        id: id, startTime: c.startTime, endTime: c.endTime));
+    _contractions.sort((a, b) => a.startTime.compareTo(b.startTime));
+    notifyListeners();
+  }
+
+  Future<void> deleteContraction(int id) async {
+    await _db.deleteContraction(id);
+    _contractions.removeWhere((c) => c.id == id);
+    notifyListeners();
+  }
+
+  Future<void> clearContractions() async {
+    await _db.clearContractions();
+    _contractions = [];
     notifyListeners();
   }
 

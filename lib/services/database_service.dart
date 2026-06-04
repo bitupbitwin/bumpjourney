@@ -9,6 +9,9 @@ class DatabaseService {
   DatabaseService._();
   static final DatabaseService instance = DatabaseService._();
 
+  /// 当前数据库 schema 版本。新增表 / 字段时 +1,并在 [_migrations] 中登记升级步骤。
+  static const int dbVersion = 2;
+
   Database? _db;
 
   /// 在 main() 中调用一次,初始化桌面端 ffi。
@@ -25,12 +28,68 @@ class DatabaseService {
     final path = p.join(dir.path, 'bumpjourney.db');
     _db = await databaseFactory.openDatabase(
       path,
-      options: OpenDatabaseOptions(version: 1, onCreate: _onCreate),
+      options: OpenDatabaseOptions(
+        version: dbVersion,
+        onCreate: _onCreate,
+        onUpgrade: _onUpgrade,
+      ),
     );
     return _db!;
   }
 
+  // ============================================================
+  // 迁移框架
+  // ------------------------------------------------------------
+  // 每个版本号对应一段「从上一版升级到本版」的 SQL。全新安装时在 onCreate
+  // 里建好 v1 基础表后,顺序跑一遍 2..dbVersion 的迁移即可达到最新结构;
+  // 老用户升级时,onUpgrade 只跑 oldVersion+1 到 newVersion 之间的迁移。
+  // 后续加表 / 加字段:dbVersion +1,在此登记一条即可,新老用户都安全。
+  // ============================================================
+  static final Map<int, Future<void> Function(Database)> _migrations = {
+    2: (db) async {
+      // 持久化产检 / 老公任务勾选态(此前仅存于内存,重启即丢)
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS user_check_states (
+          state_key TEXT PRIMARY KEY
+        )
+      ''');
+      // 胎动计数会话
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS fetal_movement_sessions (
+          fm_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          start_time TEXT NOT NULL,
+          end_time TEXT NOT NULL,
+          count INTEGER NOT NULL DEFAULT 0
+        )
+      ''');
+      // 宫缩计时记录
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS contraction_records (
+          ct_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          start_time TEXT NOT NULL,
+          end_time TEXT NOT NULL
+        )
+      ''');
+    },
+  };
+
   Future<void> _onCreate(Database db, int version) async {
+    await _createBaseSchema(db);
+    await _seedDemo(db);
+    // 全新安装:把 v1 之后的所有迁移补齐到最新版本
+    for (var v = 2; v <= version; v++) {
+      await _migrations[v]?.call(db);
+    }
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    for (var v = oldVersion + 1; v <= newVersion; v++) {
+      await _migrations[v]?.call(db);
+    }
+  }
+
+  /// v1 基础表(自定义事件 + 知识库)。
+  Future<void> _createBaseSchema(Database db) async {
     await db.execute('''
       CREATE TABLE user_custom_events (
         event_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -52,7 +111,6 @@ class DatabaseService {
         pinned_week INTEGER
       )
     ''');
-    await _seedDemo(db);
   }
 
   /// 首次启动的演示数据,方便你打开即见效果(可随时删除)。
@@ -120,5 +178,61 @@ class DatabaseService {
   Future<void> deleteKnowledge(int id) async {
     final db = await _database;
     await db.delete('user_knowledge_base', where: 'item_id = ?', whereArgs: [id]);
+  }
+
+  // ---------- 勾选态(产检 / 老公任务) ----------
+  Future<Set<String>> getCheckStates() async {
+    final db = await _database;
+    final rows = await db.query('user_check_states');
+    return rows.map((r) => r['state_key'] as String).toSet();
+  }
+
+  Future<void> setCheckState(String key, bool present) async {
+    final db = await _database;
+    if (present) {
+      await db.insert('user_check_states', {'state_key': key},
+          conflictAlgorithm: ConflictAlgorithm.ignore);
+    } else {
+      await db.delete('user_check_states', where: 'state_key = ?', whereArgs: [key]);
+    }
+  }
+
+  // ---------- 胎动计数 ----------
+  Future<List<FetalMovementSession>> getFetalSessions() async {
+    final db = await _database;
+    final rows = await db.query('fetal_movement_sessions', orderBy: 'start_time DESC');
+    return rows.map(FetalMovementSession.fromMap).toList();
+  }
+
+  Future<int> insertFetalSession(FetalMovementSession s) async {
+    final db = await _database;
+    return db.insert('fetal_movement_sessions', s.toMap());
+  }
+
+  Future<void> deleteFetalSession(int id) async {
+    final db = await _database;
+    await db.delete('fetal_movement_sessions', where: 'fm_id = ?', whereArgs: [id]);
+  }
+
+  // ---------- 宫缩计时 ----------
+  Future<List<ContractionRecord>> getContractions() async {
+    final db = await _database;
+    final rows = await db.query('contraction_records', orderBy: 'start_time ASC');
+    return rows.map(ContractionRecord.fromMap).toList();
+  }
+
+  Future<int> insertContraction(ContractionRecord c) async {
+    final db = await _database;
+    return db.insert('contraction_records', c.toMap());
+  }
+
+  Future<void> deleteContraction(int id) async {
+    final db = await _database;
+    await db.delete('contraction_records', where: 'ct_id = ?', whereArgs: [id]);
+  }
+
+  Future<void> clearContractions() async {
+    final db = await _database;
+    await db.delete('contraction_records');
   }
 }

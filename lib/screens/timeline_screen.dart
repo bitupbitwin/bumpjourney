@@ -15,8 +15,6 @@ class TimelineScreen extends StatefulWidget {
 }
 
 class _TimelineScreenState extends State<TimelineScreen> {
-  final _checkedChecks = <String>{}; // 本地勾选态(产检/任务,演示用)
-
   @override
   Widget build(BuildContext context) {
     final app = context.watch<AppState>();
@@ -48,7 +46,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           ),
         ),
 
-        if (!isDad) ..._momCards(data, accent, accentSoft),
+        if (!isDad) ..._momCards(app, data, accent, accentSoft),
         if (isDad) ..._dadCards(app, data, accent, accentSoft),
 
         // 知识库锚定
@@ -84,7 +82,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   // —— 孕妈视角 ——
-  List<Widget> _momCards(StandardWeekData d, Color accent, Color accentSoft) {
+  List<Widget> _momCards(AppState app, StandardWeekData d, Color accent, Color accentSoft) {
     return [
       SectionCard(
         child: Column(
@@ -158,11 +156,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 title: e.value.title,
                 note: e.value.note,
                 accent: accent,
-                checked: _checkedChecks.contains(key),
+                checked: app.isChecked(key),
                 last: e.key == d.checks.length - 1,
-                onTap: () => setState(() => _checkedChecks.contains(key)
-                    ? _checkedChecks.remove(key)
-                    : _checkedChecks.add(key)),
+                onTap: () => app.setCheck(key, !app.isChecked(key)),
               );
             }),
           ],
@@ -293,22 +289,22 @@ class _TimelineScreenState extends State<TimelineScreen> {
             const SizedBox(height: 4),
             ...d.dadTasks.asMap().entries.map((e) {
               final key = 'dad_${d.week}_${e.key}';
-              final checked =
-                  _checkedChecks.contains(key) || (e.value.defaultDone && !_checkedChecks.contains('un_$key'));
+              final checked = app.isChecked(key) ||
+                  (e.value.defaultDone && !app.isChecked('un_$key'));
               return CheckRow(
                 title: e.value.title,
                 accent: accent,
                 checked: checked,
                 last: e.key == d.dadTasks.length - 1,
-                onTap: () => setState(() {
+                onTap: () {
                   if (checked) {
-                    _checkedChecks.remove(key);
-                    _checkedChecks.add('un_$key');
+                    app.setCheck(key, false);
+                    app.setCheck('un_$key', true);
                   } else {
-                    _checkedChecks.add(key);
-                    _checkedChecks.remove('un_$key');
+                    app.setCheck(key, true);
+                    app.setCheck('un_$key', false);
                   }
-                }),
+                },
               );
             }),
           ],

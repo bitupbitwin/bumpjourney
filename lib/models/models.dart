@@ -139,3 +139,64 @@ class KnowledgeItem {
         pinnedWeek: m['pinned_week'] as int?,
       );
 }
+
+/// 胎动计数会话(可写,落 SQLite 表 fetal_movement_sessions)。
+/// 一次「数胎动」即一条记录:开始/结束时间 + 这段时间内记录的胎动次数。
+class FetalMovementSession {
+  final int? id;
+  final DateTime startTime;
+  final DateTime endTime;
+  final int count;
+
+  const FetalMovementSession({
+    this.id,
+    required this.startTime,
+    required this.endTime,
+    required this.count,
+  });
+
+  Duration get duration => endTime.difference(startTime);
+
+  Map<String, Object?> toMap() => {
+        if (id != null) 'fm_id': id,
+        'start_time': startTime.toIso8601String(),
+        'end_time': endTime.toIso8601String(),
+        'count': count,
+      };
+
+  factory FetalMovementSession.fromMap(Map<String, Object?> m) =>
+      FetalMovementSession(
+        id: m['fm_id'] as int?,
+        startTime: DateTime.parse(m['start_time'] as String),
+        endTime: DateTime.parse(m['end_time'] as String),
+        count: (m['count'] as int?) ?? 0,
+      );
+}
+
+/// 宫缩计时记录(可写,落 SQLite 表 contraction_records)。
+/// 每一次宫缩即一条记录;间隔由相邻记录的开始时间推算。
+class ContractionRecord {
+  final int? id;
+  final DateTime startTime;
+  final DateTime endTime;
+
+  const ContractionRecord({
+    this.id,
+    required this.startTime,
+    required this.endTime,
+  });
+
+  Duration get duration => endTime.difference(startTime);
+
+  Map<String, Object?> toMap() => {
+        if (id != null) 'ct_id': id,
+        'start_time': startTime.toIso8601String(),
+        'end_time': endTime.toIso8601String(),
+      };
+
+  factory ContractionRecord.fromMap(Map<String, Object?> m) => ContractionRecord(
+        id: m['ct_id'] as int?,
+        startTime: DateTime.parse(m['start_time'] as String),
+        endTime: DateTime.parse(m['end_time'] as String),
+      );
+}
