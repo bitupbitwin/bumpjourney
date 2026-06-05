@@ -1,16 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../services/database_service.dart';
+import '../services/notification_service.dart';
 import '../theme/app_theme.dart';
 
 class AppState extends ChangeNotifier {
   final _db = DatabaseService.instance;
 
-  // —— 孕期基准 —— 后续可由「我的」页设置末次月经/预产期推算
+  /// 足月妊娠天数(末次月经起算 280 天 ≈ 40 周)。
+  static const int fullTermDays = 280;
+  static const String _dueDateKey = 'due_date';
+
+  // —— 孕期基准 —— 可由「我的」页按 预产期 / 末次月经 / B超孕周 设定,已持久化
   DateTime dueDate = DateTime.now().add(const Duration(days: 107));
 
-  int get currentWeek {
-    final daysToDue = dueDate.difference(DateTime.now()).inDays;
+  int get currentWeek => weekForDate(DateTime.now());
+
+  /// 任意日期对应的孕周(用于体重曲线等按日期定位)。
+  int weekForDate(DateTime d) {
+    final daysToDue = dueDate.difference(d).inDays;
     final w = 40 - (daysToDue / 7).round();
     return w.clamp(1, 40);
   }
@@ -26,18 +35,63 @@ class AppState extends ChangeNotifier {
   Set<String> _checkStates = {};
   List<FetalMovementSession> _fetalSessions = [];
   List<ContractionRecord> _contractions = [];
+  List<WeightRecord> _weights = [];
 
   List<CustomEvent> get allEvents => _events;
   List<KnowledgeItem> get allKnowledge => _knowledge;
   List<FetalMovementSession> get fetalSessions => _fetalSessions;
   List<ContractionRecord> get contractions => _contractions;
+  List<WeightRecord> get weights => _weights;
 
   Future<void> load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getString(_dueDateKey);
+    if (stored != null) {
+      dueDate = DateTime.tryParse(stored) ?? dueDate;
+      selectedWeek = currentWeek;
+    }
     _events = await _db.getEvents();
     _knowledge = await _db.getKnowledge();
     _checkStates = await _db.getCheckStates();
     _fetalSessions = await _db.getFetalSessions();
     _contractions = await _db.getContractions();
+    _weights = await _db.getWeights();
+    notifyListeners();
+    NotificationService.instance.rescheduleAll(_events);
+  }
+
+  // —— 孕期基准设定(三种方式),均持久化 ——
+  Future<void> setDueDate(DateTime d) async {
+    dueDate = DateTime(d.year, d.month, d.day);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_dueDateKey, dueDate.toIso8601String());
+    selectedWeek = currentWeek;
+    notifyListeners();
+  }
+
+  /// 按末次月经(LMP)推算:预产期 = LMP + 280 天。
+  Future<void> setDueDateFromLmp(DateTime lmp) =>
+      setDueDate(lmp.add(const Duration(days: fullTermDays)));
+
+  /// 按 B 超孕周推算:已知某次 B 超日期及当时孕周(周+天)。
+  /// 等效末次月经 = 检查日 -(周*7+天),预产期 = 等效 LMP + 280 天。
+  Future<void> setDueDateFromBScan(DateTime scanDate, int weeks, int days) {
+    final gestDays = weeks * 7 + days;
+    final lmp = scanDate.subtract(Duration(days: gestDays));
+    return setDueDateFromLmp(lmp);
+  }
+
+  // —— 体重记录 ——
+  Future<void> addWeight(WeightRecord w) async {
+    final id = await _db.insertWeight(w);
+    _weights.add(WeightRecord(id: id, date: w.date, weightKg: w.weightKg));
+    _weights.sort((a, b) => a.date.compareTo(b.date));
+    notifyListeners();
+  }
+
+  Future<void> deleteWeight(int id) async {
+    await _db.deleteWeight(id);
+    _weights.removeWhere((w) => w.id == id);
     notifyListeners();
   }
 
@@ -116,22 +170,32 @@ class AppState extends ChangeNotifier {
   // —— 写操作 ——
   Future<void> addEvent(CustomEvent e) async {
     final id = await _db.insertEvent(e);
-    _events.add(e.copyWith(id: id));
+    final saved = e.copyWith(id: id);
+    _events.add(saved);
     notifyListeners();
+    await NotificationService.instance.scheduleEvent(saved);
   }
 
   Future<void> toggleEvent(CustomEvent e) async {
     if (e.id == null) return;
-    await _db.updateEventCompleted(e.id!, !e.isCompleted);
+    final nowCompleted = !e.isCompleted;
+    await _db.updateEventCompleted(e.id!, nowCompleted);
     final i = _events.indexWhere((x) => x.id == e.id);
-    if (i >= 0) _events[i] = e.copyWith(isCompleted: !e.isCompleted);
+    if (i >= 0) _events[i] = e.copyWith(isCompleted: nowCompleted);
     notifyListeners();
+    // 完成则取消提醒,重新打开则重新安排
+    if (nowCompleted) {
+      await NotificationService.instance.cancel(e.id!);
+    } else if (i >= 0) {
+      await NotificationService.instance.scheduleEvent(_events[i]);
+    }
   }
 
   Future<void> deleteEvent(int id) async {
     await _db.deleteEvent(id);
     _events.removeWhere((e) => e.id == id);
     notifyListeners();
+    await NotificationService.instance.cancel(id);
   }
 
   Future<void> addKnowledge(KnowledgeItem k) async {

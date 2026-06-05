@@ -10,7 +10,7 @@ class DatabaseService {
   static final DatabaseService instance = DatabaseService._();
 
   /// 当前数据库 schema 版本。新增表 / 字段时 +1,并在 [_migrations] 中登记升级步骤。
-  static const int dbVersion = 2;
+  static const int dbVersion = 3;
 
   Database? _db;
 
@@ -68,6 +68,16 @@ class DatabaseService {
           ct_id INTEGER PRIMARY KEY AUTOINCREMENT,
           start_time TEXT NOT NULL,
           end_time TEXT NOT NULL
+        )
+      ''');
+    },
+    3: (db) async {
+      // 体重记录(孕期体重增长曲线)
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS weight_records (
+          w_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          date TEXT NOT NULL,
+          weight REAL NOT NULL
         )
       ''');
     },
@@ -234,5 +244,22 @@ class DatabaseService {
   Future<void> clearContractions() async {
     final db = await _database;
     await db.delete('contraction_records');
+  }
+
+  // ---------- 体重记录 ----------
+  Future<List<WeightRecord>> getWeights() async {
+    final db = await _database;
+    final rows = await db.query('weight_records', orderBy: 'date ASC');
+    return rows.map(WeightRecord.fromMap).toList();
+  }
+
+  Future<int> insertWeight(WeightRecord w) async {
+    final db = await _database;
+    return db.insert('weight_records', w.toMap());
+  }
+
+  Future<void> deleteWeight(int id) async {
+    final db = await _database;
+    await db.delete('weight_records', where: 'w_id = ?', whereArgs: [id]);
   }
 }

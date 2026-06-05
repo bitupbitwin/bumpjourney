@@ -47,4 +47,12 @@ void main() {
     expect(back.startTime, c.startTime);
     expect(back.endTime, c.endTime);
   });
+
+  test('WeightRecord 可序列化往返', () {
+    final w = WeightRecord(id: 3, date: DateTime(2026, 6, 5), weightKg: 58.5);
+    final back = WeightRecord.fromMap(w.toMap());
+    expect(back.id, 3);
+    expect(back.weightKg, 58.5);
+    expect(back.date, w.date);
+  });
 }

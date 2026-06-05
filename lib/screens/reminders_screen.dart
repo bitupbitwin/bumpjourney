@@ -71,7 +71,7 @@ class RemindersScreen extends StatelessWidget {
           );
         }),
         const SizedBox(height: 8),
-        const Text('💡 本地通知将在 flutter_local_notifications 接入后生效。',
+        const Text('🔔 已开启本地通知:带「提前提醒」的事件会在目标日前提醒你(目标日前 N 天 09:00)。',
             style: TextStyle(fontSize: 12, color: AppColors.sub)),
       ],
     );

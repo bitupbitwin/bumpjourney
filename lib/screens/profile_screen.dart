@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/app_state.dart';
 import '../theme/app_theme.dart';
 import '../widgets/section_card.dart';
+import 'due_date_sheet.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -31,18 +32,7 @@ class ProfileScreen extends StatelessWidget {
               _row('距预产期', '${app.daysLeft} 天'),
               const Divider(color: AppColors.line),
               GestureDetector(
-                onTap: () async {
-                  final d = await showDatePicker(
-                    context: context,
-                    initialDate: app.dueDate,
-                    firstDate: DateTime.now().subtract(const Duration(days: 300)),
-                    lastDate: DateTime.now().add(const Duration(days: 300)),
-                  );
-                  if (d != null) {
-                    app.dueDate = d;
-                    app.goToday();
-                  }
-                },
+                onTap: () => showDueDateSheet(context),
                 child: _row('预产期',
                     '${app.dueDate.year}-${app.dueDate.month.toString().padLeft(2, '0')}-${app.dueDate.day.toString().padLeft(2, '0')} ›'),
               ),

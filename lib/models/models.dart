@@ -200,3 +200,28 @@ class ContractionRecord {
         endTime: DateTime.parse(m['end_time'] as String),
       );
 }
+
+/// 体重记录(可写,落 SQLite 表 weight_records)。
+class WeightRecord {
+  final int? id;
+  final DateTime date;
+  final double weightKg;
+
+  const WeightRecord({
+    this.id,
+    required this.date,
+    required this.weightKg,
+  });
+
+  Map<String, Object?> toMap() => {
+        if (id != null) 'w_id': id,
+        'date': date.toIso8601String(),
+        'weight': weightKg,
+      };
+
+  factory WeightRecord.fromMap(Map<String, Object?> m) => WeightRecord(
+        id: m['w_id'] as int?,
+        date: DateTime.parse(m['date'] as String),
+        weightKg: (m['weight'] as num).toDouble(),
+      );
+}
