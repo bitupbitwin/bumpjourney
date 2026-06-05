@@ -225,3 +225,40 @@ class WeightRecord {
         weightKg: (m['weight'] as num).toDouble(),
       );
 }
+
+/// 待产包清单条目(可写,落 SQLite 表 checklist_items)。
+/// category:证件 / 妈妈 / 宝宝;首次启动注入标准模板,用户可勾选/增删。
+class ChecklistItem {
+  final int? id;
+  final String category;
+  final String title;
+  final bool checked;
+
+  const ChecklistItem({
+    this.id,
+    required this.category,
+    required this.title,
+    this.checked = false,
+  });
+
+  Map<String, Object?> toMap() => {
+        if (id != null) 'cl_id': id,
+        'category': category,
+        'title': title,
+        'is_checked': checked ? 1 : 0,
+      };
+
+  factory ChecklistItem.fromMap(Map<String, Object?> m) => ChecklistItem(
+        id: m['cl_id'] as int?,
+        category: m['category'] as String,
+        title: m['title'] as String,
+        checked: (m['is_checked'] as int? ?? 0) == 1,
+      );
+
+  ChecklistItem copyWith({bool? checked}) => ChecklistItem(
+        id: id,
+        category: category,
+        title: title,
+        checked: checked ?? this.checked,
+      );
+}

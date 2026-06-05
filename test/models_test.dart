@@ -55,4 +55,15 @@ void main() {
     expect(back.weightKg, 58.5);
     expect(back.date, w.date);
   });
+
+  test('ChecklistItem 序列化往返 + copyWith 切换勾选', () {
+    const c = ChecklistItem(
+        id: 5, category: '证件', title: '身份证', checked: false);
+    final back = ChecklistItem.fromMap(c.toMap());
+    expect(back.id, 5);
+    expect(back.category, '证件');
+    expect(back.title, '身份证');
+    expect(back.checked, isFalse);
+    expect(c.copyWith(checked: true).checked, isTrue);
+  });
 }

@@ -36,12 +36,14 @@ class AppState extends ChangeNotifier {
   List<FetalMovementSession> _fetalSessions = [];
   List<ContractionRecord> _contractions = [];
   List<WeightRecord> _weights = [];
+  List<ChecklistItem> _checklist = [];
 
   List<CustomEvent> get allEvents => _events;
   List<KnowledgeItem> get allKnowledge => _knowledge;
   List<FetalMovementSession> get fetalSessions => _fetalSessions;
   List<ContractionRecord> get contractions => _contractions;
   List<WeightRecord> get weights => _weights;
+  List<ChecklistItem> get checklist => _checklist;
 
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
@@ -56,8 +58,32 @@ class AppState extends ChangeNotifier {
     _fetalSessions = await _db.getFetalSessions();
     _contractions = await _db.getContractions();
     _weights = await _db.getWeights();
+    _checklist = await _db.getChecklist();
     notifyListeners();
     NotificationService.instance.rescheduleAll(_events);
+  }
+
+  // —— 待产包清单 ——
+  Future<void> toggleChecklistItem(ChecklistItem item) async {
+    if (item.id == null) return;
+    final next = !item.checked;
+    await _db.updateChecklistChecked(item.id!, next);
+    final i = _checklist.indexWhere((x) => x.id == item.id);
+    if (i >= 0) _checklist[i] = item.copyWith(checked: next);
+    notifyListeners();
+  }
+
+  Future<void> addChecklistItem(String category, String title) async {
+    final item = ChecklistItem(category: category, title: title);
+    final id = await _db.insertChecklistItem(item);
+    _checklist.add(ChecklistItem(id: id, category: category, title: title));
+    notifyListeners();
+  }
+
+  Future<void> deleteChecklistItem(int id) async {
+    await _db.deleteChecklistItem(id);
+    _checklist.removeWhere((x) => x.id == id);
+    notifyListeners();
   }
 
   // —— 孕期基准设定(三种方式),均持久化 ——

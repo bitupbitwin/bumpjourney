@@ -10,7 +10,29 @@ class DatabaseService {
   static final DatabaseService instance = DatabaseService._();
 
   /// 当前数据库 schema 版本。新增表 / 字段时 +1,并在 [_migrations] 中登记升级步骤。
-  static const int dbVersion = 3;
+  static const int dbVersion = 4;
+
+  /// 待产包标准模板(首次建表时注入)。
+  static const Map<String, List<String>> checklistTemplate = {
+    '证件': ['身份证(夫妻双方)', '医保卡 / 社保卡', '产检本 / 病历', '银行卡 / 少量现金', '准生证(按当地)'],
+    '妈妈': [
+      '哺乳内衣 2-3 件',
+      '月子服 / 睡衣',
+      '产褥垫 + 一次性内裤',
+      '防滑拖鞋、毛巾牙具',
+      '吸奶器 + 乳头膏',
+      '保温杯、加餐零食(巧克力)',
+      '充电器 / 充电宝',
+    ],
+    '宝宝': [
+      '新生儿连体衣 / 和尚服',
+      '包被 / 抱被',
+      '纸尿裤(NB 码)+ 湿巾',
+      '隔尿垫、口水巾',
+      '奶瓶 + 小勺',
+      '帽子、袜子',
+    ],
+  };
 
   Database? _db;
 
@@ -80,6 +102,25 @@ class DatabaseService {
           weight REAL NOT NULL
         )
       ''');
+    },
+    4: (db) async {
+      // 待产包清单(建表 + 注入标准模板)
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS checklist_items (
+          cl_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          category TEXT NOT NULL,
+          title TEXT NOT NULL,
+          is_checked INTEGER NOT NULL DEFAULT 0
+        )
+      ''');
+      final batch = db.batch();
+      checklistTemplate.forEach((category, items) {
+        for (final title in items) {
+          batch.insert('checklist_items',
+              {'category': category, 'title': title, 'is_checked': 0});
+        }
+      });
+      await batch.commit(noResult: true);
     },
   };
 
@@ -261,5 +302,28 @@ class DatabaseService {
   Future<void> deleteWeight(int id) async {
     final db = await _database;
     await db.delete('weight_records', where: 'w_id = ?', whereArgs: [id]);
+  }
+
+  // ---------- 待产包清单 ----------
+  Future<List<ChecklistItem>> getChecklist() async {
+    final db = await _database;
+    final rows = await db.query('checklist_items', orderBy: 'cl_id ASC');
+    return rows.map(ChecklistItem.fromMap).toList();
+  }
+
+  Future<int> insertChecklistItem(ChecklistItem c) async {
+    final db = await _database;
+    return db.insert('checklist_items', c.toMap());
+  }
+
+  Future<void> updateChecklistChecked(int id, bool checked) async {
+    final db = await _database;
+    await db.update('checklist_items', {'is_checked': checked ? 1 : 0},
+        where: 'cl_id = ?', whereArgs: [id]);
+  }
+
+  Future<void> deleteChecklistItem(int id) async {
+    final db = await _database;
+    await db.delete('checklist_items', where: 'cl_id = ?', whereArgs: [id]);
   }
 }
