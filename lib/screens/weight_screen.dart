@@ -129,7 +129,7 @@ class WeightScreen extends StatelessWidget {
               decoration: BoxDecoration(
                   color: accentSoft, borderRadius: BorderRadius.circular(14)),
               alignment: Alignment.center,
-              child: Text('${w.weightKg.toStringAsFixed(1)}',
+              child: Text(w.weightKg.toStringAsFixed(1),
                   style: TextStyle(
                       fontSize: 15, fontWeight: FontWeight.w900, color: accent)),
             ),
@@ -275,8 +275,8 @@ class _WeightChartPainter extends CustomPainter {
     }
 
     // 起止体重标注
-    _label(canvas, '${weights.first.toStringAsFixed(1)}', pointAt(0), accent);
-    _label(canvas, '${weights.last.toStringAsFixed(1)}',
+    _label(canvas, weights.first.toStringAsFixed(1), pointAt(0), accent);
+    _label(canvas, weights.last.toStringAsFixed(1),
         pointAt(records.length - 1), accent);
   }
 
