@@ -21,6 +21,8 @@ dependencies:
   http: ^1.2.1                       # 预留:云端 LLM 结构化提取
 
 dev_dependencies:
+  flutter_test:
+    sdk: flutter
   flutter_lints: ^4.0.0
 
 flutter:

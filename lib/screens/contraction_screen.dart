@@ -80,9 +80,9 @@ class _ContractionScreenState extends State<ContractionScreen> {
           ),
           // —— 5-1-1 提示 ——
           if (stats.pattern)
-            SectionCard(
+            const SectionCard(
               background: AppColors.badSoft,
-              child: const Row(
+              child: Row(
                 children: [
                   Icon(Icons.warning_amber_rounded, color: AppColors.bad),
                   SizedBox(width: 10),
