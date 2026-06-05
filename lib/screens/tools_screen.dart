@@ -6,6 +6,7 @@ import '../widgets/section_card.dart';
 import 'fetal_movement_screen.dart';
 import 'contraction_screen.dart';
 import 'weight_screen.dart';
+import 'checklist_screen.dart';
 
 /// 孕期工具中心。当前提供胎动计数与宫缩计时,后续可扩展待产包清单、体重曲线等。
 class ToolsScreen extends StatelessWidget {
@@ -52,10 +53,14 @@ class ToolsScreen extends StatelessWidget {
           accentSoft: accentSoft,
           page: const WeightScreen(),
         ),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 4, vertical: 10),
-          child: Text('更多工具(待产包清单…)陆续上线。',
-              style: TextStyle(fontSize: 11, color: AppColors.sub)),
+        _toolTile(
+          context,
+          emoji: '🎒',
+          title: '待产包清单',
+          subtitle: '证件 / 妈妈 / 宝宝,逐项备齐不遗漏',
+          accent: accent,
+          accentSoft: accentSoft,
+          page: const ChecklistScreen(),
         ),
       ],
     );

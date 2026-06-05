@@ -151,7 +151,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             CategoryTag('🏥 标准产检提醒', color: accent, bg: accentSoft),
             const SizedBox(height: 4),
             ...d.checks.asMap().entries.map((e) {
-              final key = 'chk_${d.week}_${e.key}';
+              final key = 'chk_${d.week}_${e.value.title}';
               return CheckRow(
                 title: e.value.title,
                 note: e.value.note,
@@ -288,7 +288,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             CategoryTag('✅ 老公任务清单', color: accent, bg: accentSoft),
             const SizedBox(height: 4),
             ...d.dadTasks.asMap().entries.map((e) {
-              final key = 'dad_${d.week}_${e.key}';
+              final key = 'dad_${d.week}_${e.value.title}';
               final checked = app.isChecked(key) ||
                   (e.value.defaultDone && !app.isChecked('un_$key'));
               return CheckRow(
