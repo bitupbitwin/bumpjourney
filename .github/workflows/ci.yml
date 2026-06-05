@@ -1,0 +1,39 @@
+name: CI
+
+# 每次推送到 main、以及所有 Pull Request 时自动跑静态分析与单元测试,
+# 这样无需依赖本地环境即可在 GitHub 云端验证代码质量。
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# 同一分支的新提交会取消正在跑的旧任务,节省额度。
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze-and-test:
+    name: flutter analyze + test
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 配置 Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: 打印版本(便于排查环境问题)
+        run: flutter --version
+
+      - name: 拉取依赖
+        run: flutter pub get
+
+      - name: 静态分析
+        run: flutter analyze
+
+      - name: 单元测试
+        run: flutter test
