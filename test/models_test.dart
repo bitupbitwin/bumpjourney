@@ -58,12 +58,30 @@ void main() {
 
   test('ChecklistItem 序列化往返 + copyWith 切换勾选', () {
     const c = ChecklistItem(
-        id: 5, category: '证件', title: '身份证', checked: false);
+      id: 5,
+      listKey: 'newborn',
+      category: '喂养类',
+      title: '玻璃奶瓶 120ml',
+      qty: '1-2个',
+      timing: '产前',
+      checked: false,
+      sort: 3,
+    );
     final back = ChecklistItem.fromMap(c.toMap());
     expect(back.id, 5);
-    expect(back.category, '证件');
-    expect(back.title, '身份证');
+    expect(back.listKey, 'newborn');
+    expect(back.category, '喂养类');
+    expect(back.title, '玻璃奶瓶 120ml');
+    expect(back.qty, '1-2个');
+    expect(back.timing, '产前');
+    expect(back.sort, 3);
     expect(back.checked, isFalse);
     expect(c.copyWith(checked: true).checked, isTrue);
+  });
+
+  test('ChecklistItem 默认 listKey 为 hospital_bag', () {
+    const c = ChecklistItem(category: '证件', title: '身份证');
+    expect(c.listKey, 'hospital_bag');
+    expect(ChecklistItem.fromMap(c.toMap()).listKey, 'hospital_bag');
   });
 }
