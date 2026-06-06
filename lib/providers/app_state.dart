@@ -63,7 +63,10 @@ class AppState extends ChangeNotifier {
     NotificationService.instance.rescheduleAll(_events);
   }
 
-  // —— 待产包清单 ——
+  // —— 清单(待产包 / 新生儿 / 宝妈) ——
+  List<ChecklistItem> checklistFor(String listKey) =>
+      _checklist.where((e) => e.listKey == listKey).toList();
+
   Future<void> toggleChecklistItem(ChecklistItem item) async {
     if (item.id == null) return;
     final next = !item.checked;
@@ -73,16 +76,37 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addChecklistItem(String category, String title) async {
-    final item = ChecklistItem(category: category, title: title);
+  Future<void> addChecklistItem(String listKey, String category, String title,
+      {String? qty}) async {
+    final maxSort = _checklist
+        .where((e) => e.listKey == listKey)
+        .fold<int>(-1, (m, e) => e.sort > m ? e.sort : m);
+    final item = ChecklistItem(
+        listKey: listKey,
+        category: category,
+        title: title,
+        qty: (qty != null && qty.isNotEmpty) ? qty : null,
+        sort: maxSort + 1);
     final id = await _db.insertChecklistItem(item);
-    _checklist.add(ChecklistItem(id: id, category: category, title: title));
+    _checklist.add(ChecklistItem(
+        id: id,
+        listKey: listKey,
+        category: category,
+        title: title,
+        qty: item.qty,
+        sort: item.sort));
     notifyListeners();
   }
 
   Future<void> deleteChecklistItem(int id) async {
     await _db.deleteChecklistItem(id);
     _checklist.removeWhere((x) => x.id == id);
+    notifyListeners();
+  }
+
+  Future<void> resetChecklist(String listKey) async {
+    await _db.resetChecklist(listKey);
+    _checklist = await _db.getChecklist();
     notifyListeners();
   }
 

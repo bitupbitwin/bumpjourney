@@ -226,39 +226,60 @@ class WeightRecord {
       );
 }
 
-/// 待产包清单条目(可写,落 SQLite 表 checklist_items)。
-/// category:证件 / 妈妈 / 宝宝;首次启动注入标准模板,用户可勾选/增删。
+/// 清单条目(可写,落 SQLite 表 checklist_items)。
+/// 一张表服务多份清单:list_key 区分(hospital_bag 待产包 / newborn 新生儿 / mom 宝妈)。
+/// category:子类;qty:建议数量(可空);timing:准备时机标签(产前/月子/3M+/6M+/按需,可空)。
 class ChecklistItem {
   final int? id;
+  final String listKey;
   final String category;
   final String title;
+  final String? qty;
+  final String? timing;
   final bool checked;
+  final int sort;
 
   const ChecklistItem({
     this.id,
+    this.listKey = 'hospital_bag',
     required this.category,
     required this.title,
+    this.qty,
+    this.timing,
     this.checked = false,
+    this.sort = 0,
   });
 
   Map<String, Object?> toMap() => {
         if (id != null) 'cl_id': id,
+        'list_key': listKey,
         'category': category,
         'title': title,
+        'qty': qty,
+        'timing': timing,
         'is_checked': checked ? 1 : 0,
+        'sort': sort,
       };
 
   factory ChecklistItem.fromMap(Map<String, Object?> m) => ChecklistItem(
         id: m['cl_id'] as int?,
+        listKey: (m['list_key'] as String?) ?? 'hospital_bag',
         category: m['category'] as String,
         title: m['title'] as String,
+        qty: m['qty'] as String?,
+        timing: m['timing'] as String?,
         checked: (m['is_checked'] as int? ?? 0) == 1,
+        sort: (m['sort'] as int?) ?? 0,
       );
 
   ChecklistItem copyWith({bool? checked}) => ChecklistItem(
         id: id,
+        listKey: listKey,
         category: category,
         title: title,
+        qty: qty,
+        timing: timing,
         checked: checked ?? this.checked,
+        sort: sort,
       );
 }

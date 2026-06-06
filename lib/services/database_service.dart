@@ -10,7 +10,7 @@ class DatabaseService {
   static final DatabaseService instance = DatabaseService._();
 
   /// 当前数据库 schema 版本。新增表 / 字段时 +1,并在 [_migrations] 中登记升级步骤。
-  static const int dbVersion = 4;
+  static const int dbVersion = 5;
 
   /// 待产包标准模板(首次建表时注入)。
   static const Map<String, List<String>> checklistTemplate = {
@@ -33,6 +33,121 @@ class DatabaseService {
       '帽子、袜子',
     ],
   };
+
+  /// 新生儿 / 宝妈清单模板(覆盖产前到产后第一年,分子类带建议数量与时机)。
+  /// timing:产前 / 月子 / 3M+ / 6M+ / 1M+ / 按需。
+  static const List<({String list, String category, String title, String qty, String timing})>
+      seedItems = [
+    // —— 新生儿:喂养类 ——
+    (list: 'newborn', category: '喂养类', title: '玻璃奶瓶 120ml', qty: '1-2个', timing: '产前'),
+    (list: 'newborn', category: '喂养类', title: '宽口奶瓶 240ml', qty: '2个', timing: '月子'),
+    (list: 'newborn', category: '喂养类', title: '奶瓶刷 + 奶嘴刷', qty: '', timing: '产前'),
+    (list: 'newborn', category: '喂养类', title: '蒸汽消毒锅 / 消毒柜', qty: '', timing: '产前'),
+    (list: 'newborn', category: '喂养类', title: '恒温调奶器 / 温奶器', qty: '', timing: '月子'),
+    (list: 'newborn', category: '喂养类', title: '小罐配方奶粉(应急)', qty: '1罐', timing: '产前'),
+    (list: 'newborn', category: '喂养类', title: '硅胶软勺 / 喂药器', qty: '', timing: '月子'),
+    (list: 'newborn', category: '喂养类', title: '哺乳枕 / 躺喂枕', qty: '', timing: '月子'),
+    (list: 'newborn', category: '喂养类', title: '奶瓶清洁剂', qty: '', timing: '产前'),
+    (list: 'newborn', category: '喂养类', title: '备用奶嘴(按月龄)', qty: '', timing: '按需'),
+    (list: 'newborn', category: '喂养类', title: '辅食工具(研磨碗/辅食剪/吸盘碗/软勺)', qty: '', timing: '6M+'),
+    (list: 'newborn', category: '喂养类', title: '学饮杯 / 吸管杯', qty: '', timing: '6M+'),
+    (list: 'newborn', category: '喂养类', title: '婴儿餐椅', qty: '', timing: '6M+'),
+    // —— 新生儿:消耗护理类 ——
+    (list: 'newborn', category: '消耗护理类', title: 'NB 码纸尿裤(别囤多)', qty: '1包', timing: '产前'),
+    (list: 'newborn', category: '消耗护理类', title: 'S 码纸尿裤', qty: '', timing: '1M+'),
+    (list: 'newborn', category: '消耗护理类', title: '棉柔巾(干巾)', qty: '2-3包', timing: '产前'),
+    (list: 'newborn', category: '消耗护理类', title: '婴儿湿巾(手口/护臀)', qty: '', timing: '产前'),
+    (list: 'newborn', category: '消耗护理类', title: '护臀膏', qty: '', timing: '产前'),
+    (list: 'newborn', category: '消耗护理类', title: '隔尿垫(一次性 + 可水洗)', qty: '', timing: '产前'),
+    (list: 'newborn', category: '消耗护理类', title: '婴儿面霜 / 身体乳', qty: '', timing: '产前'),
+    (list: 'newborn', category: '消耗护理类', title: '抚触油 / 润肤油', qty: '', timing: '月子'),
+    (list: 'newborn', category: '消耗护理类', title: '棉签 / 伏棉签', qty: '', timing: '产前'),
+    (list: 'newborn', category: '消耗护理类', title: '护脐贴(脐带未脱前)', qty: '', timing: '产前'),
+    (list: 'newborn', category: '消耗护理类', title: '碘伏棉棒(脐部护理)', qty: '', timing: '产前'),
+    // —— 新生儿:衣物类 ——
+    (list: 'newborn', category: '衣物类', title: '和尚服 / 连体衣(52-59码)', qty: '3-5件', timing: '产前'),
+    (list: 'newborn', category: '衣物类', title: '包被 / 抱被', qty: '2条', timing: '产前'),
+    (list: 'newborn', category: '衣物类', title: '防踢睡袋', qty: '1-2个', timing: '月子'),
+    (list: 'newborn', category: '衣物类', title: '胎帽', qty: '2顶', timing: '产前'),
+    (list: 'newborn', category: '衣物类', title: '婴儿袜 / 防抓手套', qty: '', timing: '产前'),
+    (list: 'newborn', category: '衣物类', title: '纱布浴巾 / 小方巾', qty: '若干', timing: '产前'),
+    (list: 'newborn', category: '衣物类', title: '口水巾 / 围嘴', qty: '', timing: '月子'),
+    (list: 'newborn', category: '衣物类', title: '大一码衣物(66/73码)', qty: '', timing: '3M+'),
+    // —— 新生儿:睡眠类 ——
+    (list: 'newborn', category: '睡眠类', title: '婴儿床 / 床中床', qty: '', timing: '产前'),
+    (list: 'newborn', category: '睡眠类', title: '硬质婴儿床垫', qty: '', timing: '产前'),
+    (list: 'newborn', category: '睡眠类', title: '床品(床单 + 防水隔尿垫)', qty: '', timing: '产前'),
+    (list: 'newborn', category: '睡眠类', title: '安抚奶嘴', qty: '', timing: '月子'),
+    (list: 'newborn', category: '睡眠类', title: '小夜灯', qty: '', timing: '产前'),
+    (list: 'newborn', category: '睡眠类', title: '婴儿监视器(可选)', qty: '', timing: '按需'),
+    // —— 新生儿:洗护类 ——
+    (list: 'newborn', category: '洗护类', title: '洗澡盆(带浴网/浴架)', qty: '', timing: '产前'),
+    (list: 'newborn', category: '洗护类', title: '小脸盆(分区使用)', qty: '2-3个', timing: '产前'),
+    (list: 'newborn', category: '洗护类', title: '婴儿洗发沐浴二合一', qty: '', timing: '产前'),
+    (list: 'newborn', category: '洗护类', title: '连帽婴儿浴巾', qty: '', timing: '产前'),
+    (list: 'newborn', category: '洗护类', title: '水温计', qty: '', timing: '产前'),
+    (list: 'newborn', category: '洗护类', title: '婴儿指甲剪 / 磨甲器', qty: '', timing: '产前'),
+    (list: 'newborn', category: '洗护类', title: '吸鼻器', qty: '', timing: '按需'),
+    (list: 'newborn', category: '洗护类', title: '婴儿洗衣液 / 皂', qty: '', timing: '产前'),
+    (list: 'newborn', category: '洗护类', title: '指套牙刷 / 软毛牙刷(出牙后)', qty: '', timing: '6M+'),
+    // —— 新生儿:健康医护类 ——
+    (list: 'newborn', category: '健康医护类', title: '体温计(耳温/额温)', qty: '', timing: '产前'),
+    (list: 'newborn', category: '健康医护类', title: '维生素 D3 滴剂(遵医嘱)', qty: '', timing: '月子'),
+    (list: 'newborn', category: '健康医护类', title: '退热贴', qty: '', timing: '按需'),
+    (list: 'newborn', category: '健康医护类', title: '生理盐水喷雾 / 海盐水', qty: '', timing: '按需'),
+    (list: 'newborn', category: '健康医护类', title: '益生菌(遵医嘱)', qty: '', timing: '按需'),
+    (list: 'newborn', category: '健康医护类', title: '家庭小药箱(遵医嘱备)', qty: '', timing: '按需'),
+    // —— 新生儿:出行大件类 ——
+    (list: 'newborn', category: '出行大件类', title: '婴儿提篮 / 安全座椅(出院即用)', qty: '', timing: '产前'),
+    (list: 'newborn', category: '出行大件类', title: '婴儿推车', qty: '', timing: '产前'),
+    (list: 'newborn', category: '出行大件类', title: '背带 / 腰凳', qty: '', timing: '3M+'),
+    (list: 'newborn', category: '出行大件类', title: '妈咪包 / 外出尿布包', qty: '', timing: '产前'),
+    (list: 'newborn', category: '出行大件类', title: '爬行垫', qty: '', timing: '6M+'),
+    (list: 'newborn', category: '出行大件类', title: '围栏 / 婴儿游戏床', qty: '', timing: '6M+'),
+    // —— 新生儿:玩具早教类 ——
+    (list: 'newborn', category: '玩具早教类', title: '黑白卡 / 视觉卡', qty: '', timing: '月子'),
+    (list: 'newborn', category: '玩具早教类', title: '床铃 / 健身架', qty: '', timing: '月子'),
+    (list: 'newborn', category: '玩具早教类', title: '安抚玩偶 / 牙胶', qty: '', timing: '3M+'),
+    // —— 宝妈:衣物类 ——
+    (list: 'mom', category: '衣物类', title: '哺乳内衣', qty: '2-3件', timing: '产前'),
+    (list: 'mom', category: '衣物类', title: '哺乳睡衣 / 月子服', qty: '2套', timing: '产前'),
+    (list: 'mom', category: '衣物类', title: '月子帽', qty: '', timing: '产前'),
+    (list: 'mom', category: '衣物类', title: '长筒袜 / 月子袜', qty: '', timing: '产前'),
+    (list: 'mom', category: '衣物类', title: '包跟防滑拖鞋', qty: '', timing: '产前'),
+    (list: 'mom', category: '衣物类', title: '一次性内裤', qty: '10条+', timing: '产前'),
+    (list: 'mom', category: '衣物类', title: '宽松出院衣物', qty: '', timing: '产前'),
+    (list: 'mom', category: '衣物类', title: '收腹带 / 骨盆带', qty: '', timing: '月子'),
+    // —— 宝妈:产后护理类 ——
+    (list: 'mom', category: '产后护理类', title: '产褥垫', qty: '2包', timing: '产前'),
+    (list: 'mom', category: '产后护理类', title: '产妇 / 超长夜用卫生巾', qty: '', timing: '产前'),
+    (list: 'mom', category: '产后护理类', title: '安睡裤', qty: '', timing: '产前'),
+    (list: 'mom', category: '产后护理类', title: '刀纸 / 产褥纸', qty: '', timing: '产前'),
+    (list: 'mom', category: '产后护理类', title: '会阴冲洗器', qty: '', timing: '产前'),
+    (list: 'mom', category: '产后护理类', title: '一次性马桶垫', qty: '', timing: '产前'),
+    (list: 'mom', category: '产后护理类', title: '痔疮膏 / 喷雾', qty: '', timing: '按需'),
+    (list: 'mom', category: '产后护理类', title: '防溢乳垫(一次性/可洗)', qty: '', timing: '产前'),
+    (list: 'mom', category: '产后护理类', title: '乳头膏(羊脂膏)', qty: '', timing: '产前'),
+    (list: 'mom', category: '产后护理类', title: '热敷乳贴 / 通乳工具', qty: '', timing: '月子'),
+    // —— 宝妈:哺乳类 ——
+    (list: 'mom', category: '哺乳类', title: '电动双边吸奶器', qty: '', timing: '产前'),
+    (list: 'mom', category: '哺乳类', title: '储奶袋 / 储奶瓶', qty: '', timing: '月子'),
+    (list: 'mom', category: '哺乳类', title: '哺乳枕', qty: '', timing: '月子'),
+    (list: 'mom', category: '哺乳类', title: '外出哺乳遮巾', qty: '', timing: '按需'),
+    // —— 宝妈:个护恢复类 ——
+    (list: 'mom', category: '个护恢复类', title: '软毛牙刷 + 漱口水', qty: '', timing: '产前'),
+    (list: 'mom', category: '个护恢复类', title: '温和护肤品 / 润唇膏', qty: '', timing: '产前'),
+    (list: 'mom', category: '个护恢复类', title: '吸管杯(产后躺着喝水)', qty: '', timing: '产前'),
+    (list: 'mom', category: '个护恢复类', title: '免洗洗发帽 / 发圈', qty: '', timing: '月子'),
+    (list: 'mom', category: '个护恢复类', title: '盆底肌康复(遵医嘱)', qty: '', timing: '按需'),
+    (list: 'mom', category: '个护恢复类', title: '产后 42 天复查', qty: '', timing: '月子'),
+    // —— 宝妈:营养补剂类 ——
+    (list: 'mom', category: '营养补剂类', title: '钙片 / 铁剂(遵医嘱)', qty: '', timing: '月子'),
+    (list: 'mom', category: '营养补剂类', title: '哺乳期复合维生素 / DHA', qty: '', timing: '月子'),
+    (list: 'mom', category: '营养补剂类', title: '月子餐 / 催乳汤食材', qty: '', timing: '月子'),
+    // —— 宝妈:心理其他 ——
+    (list: 'mom', category: '心理其他', title: '关注产后情绪(警惕产后抑郁)', qty: '', timing: '月子'),
+    (list: 'mom', category: '心理其他', title: '纪念物 / 记录本', qty: '', timing: '按需'),
+  ];
 
   Database? _db;
 
@@ -122,7 +237,53 @@ class DatabaseService {
       });
       await batch.commit(noResult: true);
     },
+    5: (db) async {
+      // 清单泛化:支持多份清单 + 数量/时机/排序;并注入新生儿、宝妈两套模板
+      await db.execute(
+          "ALTER TABLE checklist_items ADD COLUMN list_key TEXT NOT NULL DEFAULT 'hospital_bag'");
+      await db.execute('ALTER TABLE checklist_items ADD COLUMN qty TEXT');
+      await db.execute('ALTER TABLE checklist_items ADD COLUMN timing TEXT');
+      await db.execute(
+          'ALTER TABLE checklist_items ADD COLUMN sort INTEGER NOT NULL DEFAULT 0');
+      await seedChecklistTemplate(db, 'newborn');
+      await seedChecklistTemplate(db, 'mom');
+    },
   };
+
+  /// 为指定清单注入标准模板(供 v5 迁移与「恢复默认」复用)。
+  /// 注:hospital_bag 的模板在 v4 迁移中已注入,此处主要服务 newborn / mom;
+  /// 「恢复默认」时三者均可走此方法重建。
+  /// 必须为 static —— v5 迁移在静态 [_migrations] 闭包中调用它(无 this)。
+  static Future<void> seedChecklistTemplate(Database db, String listKey) async {
+    final batch = db.batch();
+    var sort = 0;
+    if (listKey == 'hospital_bag') {
+      checklistTemplate.forEach((category, items) {
+        for (final title in items) {
+          batch.insert('checklist_items', {
+            'list_key': 'hospital_bag',
+            'category': category,
+            'title': title,
+            'is_checked': 0,
+            'sort': sort++,
+          });
+        }
+      });
+    } else {
+      for (final it in seedItems.where((e) => e.list == listKey)) {
+        batch.insert('checklist_items', {
+          'list_key': listKey,
+          'category': it.category,
+          'title': it.title,
+          'qty': it.qty.isEmpty ? null : it.qty,
+          'timing': it.timing.isEmpty ? null : it.timing,
+          'is_checked': 0,
+          'sort': sort++,
+        });
+      }
+    }
+    await batch.commit(noResult: true);
+  }
 
   Future<void> _onCreate(Database db, int version) async {
     await _createBaseSchema(db);
@@ -304,11 +465,19 @@ class DatabaseService {
     await db.delete('weight_records', where: 'w_id = ?', whereArgs: [id]);
   }
 
-  // ---------- 待产包清单 ----------
+  // ---------- 清单(待产包 / 新生儿 / 宝妈) ----------
   Future<List<ChecklistItem>> getChecklist() async {
     final db = await _database;
-    final rows = await db.query('checklist_items', orderBy: 'cl_id ASC');
+    final rows =
+        await db.query('checklist_items', orderBy: 'list_key ASC, sort ASC, cl_id ASC');
     return rows.map(ChecklistItem.fromMap).toList();
+  }
+
+  /// 恢复某份清单为默认模板:删除该 list_key 全部条目后重新注入。
+  Future<void> resetChecklist(String listKey) async {
+    final db = await _database;
+    await db.delete('checklist_items', where: 'list_key = ?', whereArgs: [listKey]);
+    await seedChecklistTemplate(db, listKey);
   }
 
   Future<int> insertChecklistItem(ChecklistItem c) async {
