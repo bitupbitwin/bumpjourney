@@ -10,7 +10,12 @@ import 'screens/home_shell.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   DatabaseService.init(); // 桌面端 sqflite ffi 初始化
-  await NotificationService.instance.init(); // 本地通知 + 时区
+  // 本地通知初始化失败不应阻断启动(某些机型权限/插件异常会导致整 App 闪退)
+  try {
+    await NotificationService.instance.init(); // 本地通知 + 时区
+  } catch (e, st) {
+    debugPrint('NotificationService.init 失败,已忽略: $e\n$st');
+  }
   // 纯竖屏(Portrait Only)
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
