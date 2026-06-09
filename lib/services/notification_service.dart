@@ -13,20 +13,25 @@ class NotificationService {
   bool _ready = false;
 
   /// 在 main() 中调用一次。初始化时区与插件,并申请通知权限。
+  /// 任何一步失败都不抛出:仅令 _ready 保持 false,其余功能照常使用。
   Future<void> init() async {
-    tzdata.initializeTimeZones();
-    // 面向中国用户,统一使用东八区;失败则回退默认。
     try {
-      tz.setLocalLocation(tz.getLocation('Asia/Shanghai'));
-    } catch (_) {/* 保持默认本地时区 */}
+      tzdata.initializeTimeZones();
+      // 面向中国用户,统一使用东八区;失败则回退默认。
+      try {
+        tz.setLocalLocation(tz.getLocation('Asia/Shanghai'));
+      } catch (_) {/* 保持默认本地时区 */}
 
-    const settings = InitializationSettings(
-      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-      iOS: DarwinInitializationSettings(),
-    );
-    await _plugin.initialize(settings);
-    await _requestPermissions();
-    _ready = true;
+      const settings = InitializationSettings(
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        iOS: DarwinInitializationSettings(),
+      );
+      await _plugin.initialize(settings);
+      await _requestPermissions();
+      _ready = true;
+    } catch (_) {
+      _ready = false; // 通知不可用,但不影响 App 启动与其它功能
+    }
   }
 
   Future<void> _requestPermissions() async {
