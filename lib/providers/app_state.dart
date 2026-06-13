@@ -223,7 +223,8 @@ class AppState extends ChangeNotifier {
     final saved = e.copyWith(id: id);
     _events.add(saved);
     notifyListeners();
-    await NotificationService.instance.scheduleEvent(saved);
+    // 通知调度放后台执行,不阻塞「保存→关闭弹窗」,避免界面迟迟不关
+    NotificationService.instance.scheduleEvent(saved);
   }
 
   Future<void> toggleEvent(CustomEvent e) async {

@@ -28,6 +28,7 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
   final _tags = <String>{};
   int _remind = 3;
   bool _extracting = false;
+  bool _saving = false;
   int? _suggestedWeek;
 
   static const _tagOptions = ['#待产包清单', '#控糖食谱', '#分娩攻略', '#建档'];
@@ -52,6 +53,8 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
   }
 
   Future<void> _save() async {
+    if (_saving) return; // 防重复点击,避免存成多条
+    setState(() => _saving = true);
     final app = context.read<AppState>();
     final week = _suggestedWeek ?? widget.week;
     await app.addEvent(CustomEvent(
@@ -210,15 +213,23 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _save,
+                  onPressed: _saving ? null : _save,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: accent,
                     foregroundColor: Colors.white,
+                    disabledBackgroundColor: accent.withValues(alpha: .5),
                     padding: const EdgeInsets.symmetric(vertical: 15),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
-                  child: Text('保存到第 $saveWeek 周时间线',
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
+                  child: _saving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white))
+                      : Text('保存到第 $saveWeek 周时间线',
+                          style: const TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w800)),
                 ),
               ),
             ],
