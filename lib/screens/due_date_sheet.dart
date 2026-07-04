@@ -54,11 +54,17 @@ class _DueDateSheetState extends State<DueDateSheet> {
   }
 
   Future<void> _pickDate() async {
+    final first = DateTime.now().subtract(const Duration(days: 300));
+    final last = DateTime.now().add(const Duration(days: 300));
+    // initialDate 超出范围会触发 DatePicker 断言崩溃(如存储的预产期已很久远),钳制到范围内
+    var initial = _date;
+    if (initial.isBefore(first)) initial = first;
+    if (initial.isAfter(last)) initial = last;
     final d = await showDatePicker(
       context: context,
-      initialDate: _date,
-      firstDate: DateTime.now().subtract(const Duration(days: 300)),
-      lastDate: DateTime.now().add(const Duration(days: 300)),
+      initialDate: initial,
+      firstDate: first,
+      lastDate: last,
     );
     if (d != null) setState(() => _date = d);
   }

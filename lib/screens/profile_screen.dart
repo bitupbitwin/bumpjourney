@@ -29,7 +29,7 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 14),
               _row('当前孕周', '第 ${app.currentWeek} 周'),
               const Divider(color: AppColors.line),
-              _row('距预产期', '${app.daysLeft} 天'),
+              _row('距预产期', app.daysLeftLabel),
               const Divider(color: AppColors.line),
               GestureDetector(
                 onTap: () => showDueDateSheet(context),
