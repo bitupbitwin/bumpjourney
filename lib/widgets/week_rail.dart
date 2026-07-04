@@ -12,11 +12,15 @@ class WeekRail extends StatefulWidget {
 class _WeekRailState extends State<WeekRail> {
   final _ctrl = ScrollController();
   static const double _itemW = 46 + 8; // 宽 + 间距
+  int? _lastCentered; // 上次居中的周,用于感知外部(如双击 FAB 回今天)切周
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _centerOnSelected(animate: false));
+    _lastCentered = context.read<AppState>().selectedWeek;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _centerOnSelected(animate: false);
+    });
   }
 
   void _centerOnSelected({bool animate = true}) {
@@ -36,6 +40,14 @@ class _WeekRailState extends State<WeekRail> {
   Widget build(BuildContext context) {
     final app = context.watch<AppState>();
     final accent = AppColors.accent(app.role);
+
+    // 无论切周来自轮播点击还是外部(双击 FAB 回今天),统一在此感知并居中
+    if (_lastCentered != app.selectedWeek) {
+      _lastCentered = app.selectedWeek;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _centerOnSelected();
+      });
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,10 +72,7 @@ class _WeekRailState extends State<WeekRail> {
               final isSel = w == app.selectedWeek;
               final isPast = w < app.currentWeek;
               return GestureDetector(
-                onTap: () {
-                  app.selectWeek(w);
-                  _centerOnSelected();
-                },
+                onTap: () => app.selectWeek(w),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 220),
                   width: 46,

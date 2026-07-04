@@ -26,6 +26,14 @@ class AppState extends ChangeNotifier {
 
   int get daysLeft => dueDate.difference(DateTime.now()).inDays;
 
+  /// 预产期倒计时文案:未来 / 当天 / 已过均有合理表述(避免出现「还有 -3 天」)。
+  String get daysLeftLabel {
+    final d = daysLeft;
+    if (d > 0) return '还有 $d 天';
+    if (d == 0) return '预产期就是今天';
+    return '已过预产期 ${-d} 天';
+  }
+
   // —— 选中态 ——
   late int selectedWeek = currentWeek;
   AppRole role = AppRole.mom;

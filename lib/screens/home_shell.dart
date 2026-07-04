@@ -102,7 +102,7 @@ class _HomeShellState extends State<HomeShell> {
                   '预产期 ${app.dueDate.year}.${app.dueDate.month.toString().padLeft(2, '0')}.${app.dueDate.day.toString().padLeft(2, '0')}',
                   style: const TextStyle(fontSize: 11, color: AppColors.sub)),
               const SizedBox(height: 2),
-              Text('还有 ${app.daysLeft} 天',
+              Text(app.daysLeftLabel,
                   style: TextStyle(
                       fontSize: 15, fontWeight: FontWeight.w800, color: accent)),
             ],

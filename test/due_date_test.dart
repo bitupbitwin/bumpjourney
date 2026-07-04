@@ -22,6 +22,16 @@ void main() {
         expectedLmp.add(const Duration(days: AppState.fullTermDays)));
   });
 
+  test('daysLeftLabel 覆盖 未来/当天/已过 三种状态', () async {
+    final app = AppState();
+    await app.setDueDate(DateTime.now().add(const Duration(days: 10)));
+    expect(app.daysLeftLabel, contains('还有'));
+    await app.setDueDate(DateTime.now());
+    expect(app.daysLeftLabel, '预产期就是今天');
+    await app.setDueDate(DateTime.now().subtract(const Duration(days: 3)));
+    expect(app.daysLeftLabel, contains('已过预产期'));
+  });
+
   test('设定预产期后 weekForDate 自洽', () async {
     final app = AppState();
     final due = DateTime(2026, 1, 1);

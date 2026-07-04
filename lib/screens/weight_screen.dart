@@ -292,8 +292,8 @@ class _WeightChartPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _WeightChartPainter old) =>
-      old.records != records || old.accent != accent;
+  // AppState 原地修改同一列表实例,实例比较永远相等会漏刷;图很小,直接每次重绘。
+  bool shouldRepaint(covariant _WeightChartPainter old) => true;
 }
 
 String _fmtDate(DateTime d) =>

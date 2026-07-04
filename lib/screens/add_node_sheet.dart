@@ -55,16 +55,21 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
   Future<void> _save() async {
     if (_saving) return; // 防重复点击,避免存成多条
     setState(() => _saving = true);
-    final app = context.read<AppState>();
-    final week = _suggestedWeek ?? widget.week;
-    await app.addEvent(CustomEvent(
-      title: _title.text.trim().isEmpty ? '未命名事件' : _title.text.trim(),
-      content: _body.text.trim(),
-      targetDate: _date,
-      associatedWeek: week,
-      remindDaysBefore: _remind,
-    ));
-    if (mounted) Navigator.pop(context);
+    try {
+      final app = context.read<AppState>();
+      final week = _suggestedWeek ?? widget.week;
+      await app.addEvent(CustomEvent(
+        title: _title.text.trim().isEmpty ? '未命名事件' : _title.text.trim(),
+        content: _body.text.trim(),
+        targetDate: _date,
+        associatedWeek: week,
+        remindDaysBefore: _remind,
+      ));
+      if (mounted) Navigator.pop(context);
+    } finally {
+      // 保存失败时恢复按钮可用;成功 pop 后已 unmounted,不会执行 setState
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   @override
@@ -152,8 +157,9 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
                   final d = await showDatePicker(
                     context: context,
                     initialDate: _date,
-                    firstDate: DateTime(2024),
-                    lastDate: DateTime(2027),
+                    // 相对区间,避免写死年份过期后 DatePicker 断言崩溃
+                    firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                    lastDate: DateTime.now().add(const Duration(days: 365)),
                   );
                   if (d != null) setState(() => _date = d);
                 },
